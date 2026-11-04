@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Cafeteria — HMS{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Cafeteria</h2>
+    <p class="subtitle">Order food and refreshments — delivered to your room or department.</p>
+  </div>
+  <a class="btn" href="{{ url_for('cafeteria.my_orders') }}">My orders</a>
+</div>
+
+<form method="post" id="orderForm">
+  {% if items %}
+  {% set cats = [] %}{% for item in items %}{% if (item.category or 'Menu') not in cats %}{% set _ = cats.append(item.category or 'Menu') %}{% endif %}{% endfor %}
+  {% for cat in cats %}
+  <div class="cafe-cat-title">{{ cat }}</div>
+  <div class="menu-grid">
+    {% for item in items if (item.category or 'Menu') == cat %}
+    <div class="menu-card">
+      <img class="menu-img" loading="lazy" src="{{ url_for('static', filename='img/cafeteria/' ~ item.image_file) }}" alt="{{ item.name }}">
+      <div class="menu-body">
+        <div class="menu-cat">{{ item.category or 'Menu' }}</div>
+        <h4>{{ item.name }}</h4>
+        <p class="menu-desc">{{ item.description or '' }}</p>
+        <div class="menu-footer">
+          <span class="price">Rs. {{ "%.0f"|format(item.price) }}</span>
+          <div class="qty" data-price="{{ item.price }}">
+            <button type="button" data-d="-1" aria-label="Decrease">&minus;</button>
+            <input type="number" name="qty_{{ item.id }}" min="0" max="20" value="0" aria-label="Quantity of {{ item.name }}">
+            <button type="button" data-d="1" aria-label="Increase">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+
+  <div class="order-bar">
+    <div class="field grow">
+      <label for="delivery_location">Delivery location</label>
+      <input type="text" id="delivery_location" name="delivery_location"
+             placeholder="{{ 'e.g. Room 204' if session.role == 'patient' else 'e.g. Doctors Lounge, OPD-2' }}" required>
+    </div>
+    <div><span class="text-muted">Total</span><div class="order-total" id="orderTotal">Rs. 0</div></div>
+    <button class="btn btn-primary" type="submit" id="orderBtn" disabled>Place order</button>
+  </div>
+  {% else %}
+  <div class="panel empty-state"><div class="big">The cafeteria menu is currently empty.</div></div>
+  {% endif %}
+</form>
+<script>
+(function(){
+  var qs=[].slice.call(document.querySelectorAll('.qty'));
+  function recalc(){var t=0,n=0;qs.forEach(function(q){var v=parseInt(q.querySelector('input').value)||0;t+=v*parseFloat(q.dataset.price);n+=v;});
+    document.getElementById('orderTotal').textContent='Rs. '+t.toFixed(0);document.getElementById('orderBtn').disabled=n===0;}
+  qs.forEach(function(q){var i=q.querySelector('input');
+    q.querySelectorAll('button').forEach(function(b){b.onclick=function(){i.value=Math.max(0,Math.min(20,(parseInt(i.value)||0)+parseInt(b.dataset.d)));recalc();};});
+    i.oninput=recalc;});
+})();
+</script>
+{% endblock %}

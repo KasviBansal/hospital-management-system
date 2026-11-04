@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Doctors — HMS{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Doctors</h2>
+    <p class="subtitle">Staff, specializations and availability.</p>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('auth.staff_new') }}">+ Add doctor</a>
+</div>
+
+<div class="toolbar">
+  <form class="search-box" method="get">
+    <input type="text" name="q" value="{{ q }}" placeholder="Search by name or specialization...">
+  </form>
+</div>
+
+<div class="panel">
+  <table>
+    <thead>
+      <tr><th>ID</th><th>Name</th><th>Specialization</th><th>Available</th><th>Phone</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for d in doctors %}
+      <tr>
+        <td class="id-cell">D-{{ "%04d"|format(d.id) }}</td>
+        <td>Dr. {{ d.name }}</td>
+        <td>{{ d.specialization }}</td>
+        <td class="mono" style="font-size:13px;">{{ d.available_days or '—' }} {{ d.available_time or '' }}</td>
+        <td class="mono">{{ d.phone or '—' }}</td>
+        <td class="table-actions">
+          <a class="btn btn-sm" href="{{ url_for('doctors.edit_doctor', doctor_id=d.id) }}">Edit</a>
+          <form method="post" action="{{ url_for('doctors.delete_doctor', doctor_id=d.id) }}"
+                onsubmit="return confirm('Remove Dr. {{ d.name }}?');">
+            <button class="btn btn-sm btn-danger" type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr class="empty-row"><td colspan="6">No doctors added yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

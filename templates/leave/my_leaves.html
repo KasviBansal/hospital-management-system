@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}My Leave Requests — HMS{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>My Leave Requests</h2>
+    <p class="subtitle">Track the status of leave you've requested.</p>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('leave.new_leave') }}">+ Request leave</a>
+</div>
+
+<div class="panel">
+  <table>
+    <thead><tr><th>From</th><th>To</th><th>Reason</th><th>Requested</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for l in leaves %}
+      <tr>
+        <td class="mono">{{ l.start_date.strftime('%d %b %Y') }}</td>
+        <td class="mono">{{ l.end_date.strftime('%d %b %Y') }}</td>
+        <td class="text-muted">{{ l.reason or '—' }}</td>
+        <td class="mono">{{ l.requested_at.strftime('%d %b %Y') }}</td>
+        <td><span class="badge {{ 'badge-completed' if l.status == 'Approved' else ('badge-alert' if l.status == 'Rejected' else 'badge-warn') }}">{{ l.status }}</span></td>
+      </tr>
+      {% else %}
+      <tr class="empty-row"><td colspan="5">No leave requests yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

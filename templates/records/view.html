@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Record — {{ record.patient.name }} — HMS{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>{{ record.diagnosis }}</h2>
+    <p class="subtitle">{{ record.patient.name }} &middot; Dr. {{ record.doctor.name }} &middot; <span class="mono">{{ record.record_date.strftime('%d %b %Y') }}</span></p>
+  </div>
+  <div style="display:flex; gap:8px;">
+    {% if user.role in ['admin', 'doctor'] %}
+    <a class="btn" href="{{ url_for('records.edit_record', record_id=record.id) }}">Edit</a>
+    <form method="post" action="{{ url_for('records.delete_record', record_id=record.id) }}"
+          onsubmit="return confirm('Delete this medical record and its prescriptions?');">
+      <button class="btn btn-danger" type="submit">Delete</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="panel" style="margin-bottom: 20px;">
+  <h3>Treatment notes</h3>
+  <p>{{ record.treatment or 'No treatment notes recorded.' }}</p>
+</div>
+
+<div class="panel">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 14px;">
+    <h3 style="border:none; padding:0; margin:0;">Prescriptions</h3>
+    {% if user.role in ['admin', 'doctor'] %}
+    <a class="btn btn-primary btn-sm" href="{{ url_for('records.new_prescription', record_id=record.id) }}">+ New prescription</a>
+    {% endif %}
+  </div>
+
+  {% if record.prescriptions %}
+    {% for pr in record.prescriptions|sort(attribute='id', reverse=true) %}
+    <div style="border:1px solid var(--border); border-radius:3px; padding:14px 16px; margin-bottom:12px;">
+      <div style="display:flex; justify-content:space-between;">
+        <strong class="mono">Rx-{{ "%04d"|format(pr.id) }}</strong>
+        <span class="mono text-muted">{{ pr.prescribed_date.strftime('%d %b %Y') }}</span>
+      </div>
+      {% if pr.notes %}<p class="text-muted" style="margin: 6px 0;">{{ pr.notes }}</p>{% endif %}
+      <table style="margin-top:8px;">
+        <thead><tr><th>Medicine</th><th>Dosage</th><th>Qty</th><th>Dispensed</th></tr></thead>
+        <tbody>
+          {% for item in pr.items %}
+          <tr>
+            <td>{{ item.medicine.name }}</td>
+            <td class="text-muted">{{ item.dosage or '—' }}</td>
+            <td class="mono">{{ item.quantity }}</td>
+            <td>
+              {% if item.is_fully_dispensed %}
+                <span class="badge badge-completed">Fully dispensed</span>
+              {% elif item.dispensed_qty > 0 %}
+                <span class="badge badge-warn">{{ item.dispensed_qty }}/{{ item.quantity }} dispensed</span>
+              {% else %}
+                <span class="badge badge-booked">Pending</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state"><div class="big">No prescriptions issued for this record yet.</div></div>
+  {% endif %}
+</div>
+{% endblock %}

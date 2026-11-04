@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Payment History — HMS{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>{{ 'All Payments' if is_admin else 'My Payment History' }}</h2>
+    <p class="subtitle">Simulated transactions for appointments and cafeteria orders.</p>
+  </div>
+</div>
+
+<div class="stat-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+  <div class="stat-card">
+    <span class="value">Rs. {{ "%.2f"|format(payments|sum(attribute='amount')) }}</span>
+    <span class="label">Total {{ 'processed' if is_admin else 'paid' }}</span>
+  </div>
+  <div class="stat-card">
+    <span class="value">{{ payments|length }}</span>
+    <span class="label">Transactions</span>
+  </div>
+</div>
+
+<div class="panel">
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        {% if is_admin %}<th>User</th>{% endif %}
+        <th>Purpose</th><th>Reference</th><th>Method</th><th>Amount</th><th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in payments %}
+      <tr>
+        <td class="mono">{{ p.created_at.strftime('%d %b %Y, %H:%M') }}</td>
+        {% if is_admin %}<td>{{ p.user.name }} <span class="text-muted">({{ p.user.role }})</span></td>{% endif %}
+        <td>{{ p.purpose|capitalize }}</td>
+        <td class="mono">#{{ p.reference_id }}</td>
+        <td class="text-muted">{{ p.method }}</td>
+        <td class="mono">Rs. {{ "%.2f"|format(p.amount) }}</td>
+        <td><span class="badge badge-completed">{{ p.status }}</span></td>
+      </tr>
+      {% else %}
+      <tr class="empty-row"><td colspan="{{ 7 if is_admin else 6 }}">No payments yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

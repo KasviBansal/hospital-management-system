@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Report an Issue — HMS{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Report a facility issue</h2>
+    <p class="subtitle">Cleaning, plumbing, electrical, or other maintenance concerns — routed directly to admin.</p>
+  </div>
+</div>
+
+<div class="panel form-panel">
+  <form method="post">
+    <label style="display:block; font-size:13px; font-weight:600; color:var(--muted-ink); margin-bottom:10px;">Category</label>
+    <div class="category-grid" style="margin-bottom: 20px;">
+      {% for c in categories %}
+      <label class="category-option">
+        <input type="radio" name="category" value="{{ c }}" {{ 'checked' if form.get('category') == c }} required> {{ c }}
+      </label>
+      {% endfor %}
+    </div>
+    <div class="field">
+      <label for="location">Location</label>
+      <input type="text" id="location" name="location" value="{{ form.get('location', '') }}"
+             placeholder="e.g. Room 204, Ward 3, OPD corridor" required>
+    </div>
+    <div class="field">
+      <label for="description">Describe the issue</label>
+      <textarea id="description" name="description" rows="4" required>{{ form.get('description', '') }}</textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">Submit complaint</button>
+      <a class="btn" href="{{ url_for('complaints.my_complaints') }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if patient else 'Register' }} Patient — HMS{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>{{ 'Edit patient' if patient else 'Register patient' }}</h2>
+    <p class="subtitle">{{ 'Update the details on file.' if patient else 'Add a new patient to the system.' }}</p>
+  </div>
+</div>
+
+<div class="panel form-panel">
+  <form method="post">
+    <div class="field">
+      <label for="name">Full name</label>
+      <input type="text" id="name" name="name" value="{{ form.get('name', '') }}" required>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label for="age">Age</label>
+        <input type="number" id="age" name="age" min="0" max="130" value="{{ form.get('age', '') }}" required>
+      </div>
+      <div class="field">
+        <label for="gender">Gender</label>
+        <select id="gender" name="gender" required>
+          <option value="">Select...</option>
+          {% for g in ['Male', 'Female', 'Other'] %}
+          <option value="{{ g }}" {{ 'selected' if form.get('gender') == g }}>{{ g }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="phone">Phone number</label>
+      <input type="text" id="phone" name="phone" value="{{ form.get('phone', '') }}">
+    </div>
+    <div class="field">
+      <label for="address">Address</label>
+      <textarea id="address" name="address" rows="3">{{ form.get('address', '') }}</textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">{{ 'Save changes' if patient else 'Register patient' }}</button>
+      <a class="btn" href="{{ url_for('patients.list_patients') }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

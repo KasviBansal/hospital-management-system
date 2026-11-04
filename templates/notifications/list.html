@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Notifications — HMS{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Notifications</h2>
+    <p class="subtitle">Everything that's needed your attention recently.</p>
+  </div>
+</div>
+
+<div class="panel">
+  {% if notifications %}
+  {% for n in notifications %}
+  <a href="{{ url_for('notifications.open_notification', note_id=n.id) }}" class="notif-row {{ 'notif-unread' if not n.is_read }}">
+    <span class="notif-dot notif-dot-{{ n.category }}"></span>
+    <span class="notif-text">{{ n.message }}</span>
+    <span class="notif-time mono">{{ n.created_at.strftime('%d %b, %H:%M') }}</span>
+  </a>
+  {% endfor %}
+  {% else %}
+  <div class="empty-state"><div class="big">No notifications yet.</div></div>
+  {% endif %}
+</div>
+{% endblock %}

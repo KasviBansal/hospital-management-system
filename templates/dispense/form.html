@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Dispense — {{ medicine.name }} — HMS{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Dispense {{ medicine.name }}</h2>
+    <p class="subtitle">For {{ item.prescription.patient.name }} &middot; prescribed by Dr. {{ item.prescription.doctor.name }}</p>
+  </div>
+</div>
+
+<div class="panel form-panel">
+  <div class="stat-grid" style="margin-bottom: 20px;">
+    <div class="stat-card">
+      <span class="value">{{ item.pending_qty }}</span>
+      <span class="label">Units pending</span>
+    </div>
+    <div class="stat-card">
+      <span class="value">{{ medicine.stock_qty }}</span>
+      <span class="label">Units in stock</span>
+    </div>
+    <div class="stat-card">
+      <span class="value">Rs. {{ "%.2f"|format(medicine.price) }}</span>
+      <span class="label">Price per unit</span>
+    </div>
+  </div>
+
+  <form method="post">
+    <div class="field">
+      <label for="quantity">Quantity to dispense</label>
+      <input type="number" id="quantity" name="quantity" min="1" max="{{ [item.pending_qty, medicine.stock_qty]|min }}" required>
+      <p class="hint">Dosage instruction: {{ item.dosage or 'not specified' }}</p>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">Confirm dispense &amp; bill</button>
+      <a class="btn" href="{{ url_for('pharmacy.dispense_queue') }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

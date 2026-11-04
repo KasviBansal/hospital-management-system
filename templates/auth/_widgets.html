@@ -1,0 +1,15 @@
+{% macro stat(icon, value, label, tone='') %}
+<div class="stat-card"><span class="stat-ico {{ tone }}">{{ icons[icon]() }}</span>
+  <span class="stat-text"><span class="value">{{ value }}</span><span class="label">{{ label }}</span></span></div>
+{% endmacro %}
+{% macro calendar(weeks, today, marked, month_name) %}
+<div class="cal-head"><span>{{ month_name }}</span></div>
+<div class="cal-grid">
+  {% for d in ['Mo','Tu','We','Th','Fr','Sa','Su'] %}<div class="dow">{{ d }}</div>{% endfor %}
+  {% for w in weeks %}{% for d in w %}
+    {% if d == 0 %}<div class="day muted">0</div>
+    {% else %}<div class="day {{ 'has' if d in marked }} {{ 'today' if d == today.day }}">{{ d }}</div>{% endif %}
+  {% endfor %}{% endfor %}
+</div>
+<div class="legend" style="margin-top:12px"><span><i style="background:var(--primary)"></i>Today</span><span><i style="background:var(--primary-soft)"></i>Has appointments</span></div>
+{% endmacro %}

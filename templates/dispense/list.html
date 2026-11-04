@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Dispense Queue — HMS{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Dispense Queue</h2>
+    <p class="subtitle">Prescription items awaiting dispensing, most recent first.</p>
+  </div>
+</div>
+
+<div class="panel">
+  <table>
+    <thead>
+      <tr><th>Prescribed</th><th>Patient</th><th>Medicine</th><th>Dosage</th><th>Pending / Total</th><th>Stock</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td class="mono">{{ item.prescription.prescribed_date.strftime('%d %b %Y') }}</td>
+        <td>{{ item.prescription.patient.name }}</td>
+        <td>{{ item.medicine.name }}</td>
+        <td class="text-muted">{{ item.dosage or '—' }}</td>
+        <td class="mono">{{ item.pending_qty }} / {{ item.quantity }}</td>
+        <td class="mono {{ 'text-alert' if item.medicine.is_low_stock }}">{{ item.medicine.stock_qty }}</td>
+        <td class="table-actions">
+          <a class="btn btn-sm btn-primary" href="{{ url_for('pharmacy.dispense_item', item_id=item.id) }}">Dispense</a>
+        </td>
+      </tr>
+      {% else %}
+      <tr class="empty-row"><td colspan="7">No pending prescriptions. All caught up.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

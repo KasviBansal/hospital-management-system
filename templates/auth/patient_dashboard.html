@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% import "auth/_widgets.html" as w %}
+{% block title %}My Dashboard — HMS{% endblock %}
+{% block content %}
+<div class="page-header"><div><h2>Welcome, {{ patient.name }}</h2><p class="subtitle">Patient ID <span class="mono">P-{{ "%04d"|format(patient.id) }}</span></p></div>
+  <a class="btn btn-primary" href="{{ url_for('appointments.new_appointment') }}">{{ icons.add() }} Book appointment</a></div>
+<div class="stat-grid">
+  {{ w.stat('appointments', upcoming|length, 'Upcoming appointments') }}
+  {{ w.stat('records', recent_records|length, 'Medical records', 'green') }}
+  {{ w.stat('orders', active_orders|length, 'Active food orders', 'amber') }}
+</div>
+<div class="two-col">
+  <div class="panel"><h3>Upcoming appointments</h3>
+    {% if upcoming %}<table><thead><tr><th>Date</th><th>Time</th><th>Doctor</th><th>Payment</th></tr></thead><tbody>
+      {% for a in upcoming %}<tr><td>{{ a.appt_date.strftime('%d %b %Y') }}</td><td class="mono">{{ a.appt_time }}</td><td>Dr. {{ a.doctor.name }}</td>
+        <td>{% if a.payment_status == 'Paid' %}<span class="badge badge-completed">Paid</span>{% else %}<a class="badge badge-alert" href="{{ url_for('payments.pay', purpose='appointment', reference_id=a.id) }}">Pay now</a>{% endif %}</td></tr>{% endfor %}
+    </tbody></table>{% else %}<div class="empty-state"><div class="big">No upcoming appointments.</div></div>{% endif %}</div>
+  <div class="panel"><h3>Doctor availability today</h3>
+    <div class="doc-grid" style="grid-template-columns:1fr">
+    {% for s in doctor_status %}<div class="doc-card"><div class="doc-top"><span class="avatar">{{ s.doctor.name[:1] }}</span>
+      <div><div class="doc-name">Dr. {{ s.doctor.name }}</div><div class="doc-spec">{{ s.doctor.specialization }}</div></div></div>
+      {% if s.on_leave %}<span class="badge badge-alert avail-pill">On leave until {{ s.back_on.strftime('%d %b') }}</span>
+      {% else %}<span class="badge badge-completed avail-pill">Available</span>{% endif %}
+      {% if s.next_leave %}<span class="hint">Leave from {{ s.next_leave.start_date.strftime('%d %b') }}</span>{% endif %}</div>{% endfor %}
+    </div></div>
+</div>
+<div class="two-col" style="margin-top:20px">
+  <div class="panel"><h3>Recent medical records</h3>
+    {% for r in recent_records %}<p style="margin:0 0 10px"><strong>{{ r.diagnosis }}</strong><br><span class="text-muted">Dr. {{ r.doctor.name }}</span></p>
+    {% else %}<div class="empty-state">No medical records yet.</div>{% endfor %}</div>
+  <div class="panel"><h3>Active cafeteria orders</h3>
+    {% for o in active_orders %}<p style="margin:0 0 10px">#{{ o.id }} · {{ o.delivery_location }} <span class="badge badge-booked">{{ o.status }}</span></p>
+    {% else %}<div class="empty-state">No active orders.</div>{% endfor %}</div>
+</div>
+{% endblock %}

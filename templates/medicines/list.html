@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Medicine Inventory — HMS{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Medicine Inventory</h2>
+    <p class="subtitle">Stock, pricing and expiry tracking.</p>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('pharmacy.new_medicine') }}">+ Add medicine</a>
+</div>
+
+<div class="toolbar">
+  <div>
+    <a class="filter-chip {{ 'active' if not filter_type }}" href="{{ url_for('pharmacy.list_medicines', q=q) }}">All</a>
+    <a class="filter-chip {{ 'active' if filter_type == 'low_stock' }}" href="{{ url_for('pharmacy.list_medicines', q=q, filter='low_stock') }}">Low stock</a>
+    <a class="filter-chip {{ 'active' if filter_type == 'near_expiry' }}" href="{{ url_for('pharmacy.list_medicines', q=q, filter='near_expiry') }}">Near expiry</a>
+  </div>
+  <form class="search-box" method="get">
+    {% if filter_type %}<input type="hidden" name="filter" value="{{ filter_type }}">{% endif %}
+    <input type="text" name="q" value="{{ q }}" placeholder="Search medicine...">
+  </form>
+</div>
+
+<div class="panel">
+  <table>
+    <thead>
+      <tr><th>ID</th><th>Name</th><th>Category</th><th>Stock</th><th>Price</th><th>Expiry</th><th>Status</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for m in medicines %}
+      <tr>
+        <td class="id-cell">M-{{ "%04d"|format(m.id) }}</td>
+        <td>{{ m.name }}</td>
+        <td class="text-muted">{{ m.category or '—' }}</td>
+        <td class="mono">{{ m.stock_qty }}</td>
+        <td class="mono">Rs. {{ "%.2f"|format(m.price) }}</td>
+        <td class="mono">{{ m.expiry_date.strftime('%d %b %Y') }}</td>
+        <td>
+          {% if m.is_expired %}<span class="badge badge-alert">Expired</span>
+          {% elif m.is_low_stock %}<span class="badge badge-alert">Low stock</span>
+          {% elif m.is_near_expiry %}<span class="badge badge-warn">Expiring soon</span>
+          {% else %}<span class="badge badge-completed">OK</span>{% endif %}
+        </td>
+        <td class="table-actions">
+          <a class="btn btn-sm" href="{{ url_for('pharmacy.edit_medicine', medicine_id=m.id) }}">Edit</a>
+          <form method="post" action="{{ url_for('pharmacy.delete_medicine', medicine_id=m.id) }}"
+                onsubmit="return confirm('Remove {{ m.name }} from inventory?');">
+            <button class="btn btn-sm btn-danger" type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr class="empty-row"><td colspan="8">No medicines match this view.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

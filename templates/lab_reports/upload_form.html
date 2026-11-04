@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Upload Lab Report — HMS{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>{{ 'Send a lab report' if not own_patient else 'Upload a lab report' }}</h2>
+    <p class="subtitle">
+      {% if own_patient %}
+        Upload a PDF or photo of a report from an outside lab. PDFs are automatically text-scanned; images are stored as-is.
+      {% else %}
+        For results processed by the hospital's own lab — this appears directly in the patient's portal.
+      {% endif %}
+    </p>
+  </div>
+</div>
+
+<div class="panel form-panel">
+  <form method="post" enctype="multipart/form-data">
+    {% if not own_patient %}
+    <div class="field">
+      <label for="patient_id">Patient</label>
+      <select id="patient_id" name="patient_id" required>
+        <option value="">Select patient...</option>
+        {% for p in patients %}
+        <option value="{{ p.id }}">{{ p.name }} (P-{{ "%04d"|format(p.id) }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% endif %}
+    <div class="field-row">
+      <div class="field">
+        <label for="test_name">Test / report name</label>
+        <input type="text" id="test_name" name="test_name" placeholder="e.g. Complete Blood Count" value="{{ form.get('test_name', '') }}" required>
+      </div>
+      <div class="field">
+        <label for="report_date">Report date</label>
+        <input type="date" id="report_date" name="report_date" max="{{ today_str }}" value="{{ form.get('report_date', today_str) }}">
+      </div>
+    </div>
+    <div class="field">
+      <label for="file">File (PDF, PNG, or JPG)</label>
+      <input type="file" id="file" name="file" accept=".pdf,.png,.jpg,.jpeg" required>
+      <p class="hint">PDF text is extracted automatically for quick reference. Images can't be auto-read in this demo — they're stored and viewable, just not text-searchable.</p>
+    </div>
+    <div class="field">
+      <label for="notes">Notes (optional)</label>
+      <textarea id="notes" name="notes" rows="2">{{ form.get('notes', '') }}</textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">Upload report</button>
+      <a class="btn" href="{{ url_for('lab_reports.list_reports') }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

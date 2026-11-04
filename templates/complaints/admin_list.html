@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Complaints — HMS{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Complaints &amp; Facility Issues</h2>
+    <p class="subtitle">Reported by patients and doctors across the hospital.</p>
+  </div>
+</div>
+
+<div class="toolbar">
+  <div>
+    <a class="filter-chip {{ 'active' if not status }}" href="{{ url_for('complaints.admin_complaints') }}">All</a>
+    <a class="filter-chip {{ 'active' if status == 'Open' }}" href="{{ url_for('complaints.admin_complaints', status='Open') }}">Open</a>
+    <a class="filter-chip {{ 'active' if status == 'In Progress' }}" href="{{ url_for('complaints.admin_complaints', status='In Progress') }}">In Progress</a>
+    <a class="filter-chip {{ 'active' if status == 'Resolved' }}" href="{{ url_for('complaints.admin_complaints', status='Resolved') }}">Resolved</a>
+  </div>
+</div>
+
+<div class="panel">
+  <table>
+    <thead><tr><th>Date</th><th>Reported by</th><th>Category</th><th>Location</th><th>Description</th><th>Status</th><th>Update</th></tr></thead>
+    <tbody>
+      {% for c in complaints %}
+      <tr>
+        <td class="mono">{{ c.created_at.strftime('%d %b %Y') }}</td>
+        <td>{{ c.user.name }} <span class="text-muted">({{ c.user.role }})</span></td>
+        <td>{{ c.category }}</td>
+        <td>{{ c.location }}</td>
+        <td class="text-muted">{{ c.description }}</td>
+        <td><span class="badge {{ 'badge-alert' if c.status == 'Open' else ('badge-warn' if c.status == 'In Progress' else 'badge-completed') }}">{{ c.status }}</span></td>
+        <td>
+          <form method="post" action="{{ url_for('complaints.admin_update_status', complaint_id=c.id) }}">
+            <select name="status" onchange="this.form.submit()">
+              <option value="">Change...</option>
+              <option value="Open">Open</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Resolved">Resolved</option>
+            </select>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr class="empty-row"><td colspan="7">No complaints match this view.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

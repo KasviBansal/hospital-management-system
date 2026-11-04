@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Medical Records — HMS{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Medical Records</h2>
+    <p class="subtitle">Diagnosis, treatment and consultation history.</p>
+  </div>
+  {% if user.role in ['admin', 'doctor'] %}
+  <a class="btn btn-primary" href="{{ url_for('records.new_record') }}">+ New record</a>
+  {% endif %}
+</div>
+
+<div class="toolbar">
+  <form class="search-box" method="get">
+    <input type="text" name="q" value="{{ q }}" placeholder="Search by patient name...">
+  </form>
+</div>
+
+<div class="panel">
+  <table>
+    <thead>
+      <tr><th>Date</th><th>Patient</th><th>Doctor</th><th>Diagnosis</th><th>Prescriptions</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for r in records %}
+      <tr>
+        <td class="mono">{{ r.record_date.strftime('%d %b %Y') }}</td>
+        <td>{{ r.patient.name }}</td>
+        <td>Dr. {{ r.doctor.name }}</td>
+        <td>{{ r.diagnosis }}</td>
+        <td class="mono">{{ r.prescriptions|length }}</td>
+        <td class="table-actions">
+          <a class="btn btn-sm" href="{{ url_for('records.view_record', record_id=r.id) }}">View</a>
+        </td>
+      </tr>
+      {% else %}
+      <tr class="empty-row"><td colspan="6">No medical records yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

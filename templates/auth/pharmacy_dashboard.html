@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% import "auth/_widgets.html" as w %}
+{% block title %}Pharmacy Dashboard — HMS{% endblock %}
+{% block content %}
+<div class="page-header"><div><h2>Pharmacy Overview</h2><p class="subtitle">Inventory health and pending work.</p></div>
+  <a class="btn btn-primary" href="{{ url_for('pharmacy.dispense_queue') }}">Go to dispense queue</a></div>
+<div class="stat-grid">
+  {{ w.stat('pharmacy', stats.medicines, 'Medicines tracked') }}
+  {{ w.stat('stock', stats.low_stock, 'Low stock items', 'red') }}
+  {{ w.stat('clock', stats.near_expiry, 'Near / at expiry', 'amber') }}
+</div>
+<div class="panel"><h3>Low stock</h3>
+  {% if low_stock %}<table><thead><tr><th>Medicine</th><th>In stock</th><th>Expiry</th></tr></thead><tbody>
+    {% for m in low_stock %}<tr><td>{{ m.name }}</td><td><span class="badge badge-alert">{{ m.stock_qty }} left</span></td><td>{{ m.expiry_date.strftime('%d %b %Y') }}</td></tr>{% endfor %}
+  </tbody></table>{% else %}<div class="empty-state">All medicines are well stocked.</div>{% endif %}</div>
+{% endblock %}

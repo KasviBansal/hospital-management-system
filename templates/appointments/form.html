@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Reschedule' if appointment else 'Book' }} Appointment — HMS{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>{{ 'Reschedule appointment' if appointment else 'Book appointment' }}</h2>
+    <p class="subtitle">Doctor availability is checked automatically to avoid double-booking.</p>
+  </div>
+</div>
+
+<div class="panel form-panel">
+  <form method="post">
+    <div class="field-row">
+      <div class="field">
+        <label for="patient_id">Patient</label>
+        {% if own_patient %}
+          <input type="text" value="{{ own_patient.name }} (P-{{ "%04d"|format(own_patient.id) }})" disabled>
+        {% else %}
+        <select id="patient_id" name="patient_id" required>
+          <option value="">Select patient...</option>
+          {% for p in patients %}
+          <option value="{{ p.id }}" {{ 'selected' if form.get('patient_id')|string == p.id|string }}>{{ p.name }} (P-{{ "%04d"|format(p.id) }})</option>
+          {% endfor %}
+        </select>
+        {% endif %}
+      </div>
+      <div class="field">
+        <label for="doctor_id">Doctor</label>
+        <select id="doctor_id" name="doctor_id" required onchange="checkDoctorAvailability()">
+          <option value="">Select doctor...</option>
+          {% for d in doctors %}
+          <option value="{{ d.id }}" {{ 'selected' if form.get('doctor_id')|string == d.id|string }}>Dr. {{ d.name }} — {{ d.specialization }} (Rs. {{ "%.0f"|format(d.consultation_fee) }})</option>
+          {% endfor %}
+        </select>
+        <p id="doctor-availability-note" class="hint"></p>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label for="appt_date">Date</label>
+        <input type="date" id="appt_date" name="appt_date" min="{{ today_str }}"
+               value="{{ form.get('appt_date', '') }}" required onchange="checkDoctorAvailability()">
+        <p class="hint">Past dates can't be selected.</p>
+      </div>
+      <div class="field">
+        <label for="appt_time">Time</label>
+        <input type="time" id="appt_time" name="appt_time" value="{{ form.get('appt_time', '') }}" required>
+      </div>
+    </div>
+    <div class="field">
+      <label for="reason">Reason for visit</label>
+      <textarea id="reason" name="reason" rows="3">{{ form.get('reason', '') }}</textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">{{ 'Save changes' if appointment else 'Book appointment' }}</button>
+      <a class="btn" href="{{ url_for('appointments.list_appointments') }}">Cancel</a>
+    </div>
+  </form>
+</div>
+
+<script>
+  async function checkDoctorAvailability() {
+    const doctorId = document.getElementById('doctor_id').value;
+    const dateVal = document.getElementById('appt_date').value;
+    const note = document.getElementById('doctor-availability-note');
+    if (!doctorId || !dateVal) { note.textContent = ''; return; }
+    try {
+      const res = await fetch(`/leave/availability/${doctorId}?date=${dateVal}`);
+      const data = await res.json();
+      if (data.on_leave) {
+        note.textContent = '⚠ This doctor is on approved leave on the selected date.';
+        note.style.color = 'var(--alert)';
+      } else {
+        note.textContent = '✓ Doctor is available on this date.';
+        note.style.color = 'var(--success)';
+      }
+    } catch (e) { note.textContent = ''; }
+  }
+</script>
+{% endblock %}

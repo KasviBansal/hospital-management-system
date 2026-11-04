@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Prescription — HMS{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Prescription Rx-{{ "%04d"|format(prescription.id) }}</h2>
+    <p class="subtitle">{{ prescription.patient.name }} &middot; Dr. {{ prescription.doctor.name }} &middot; <span class="mono">{{ prescription.prescribed_date.strftime('%d %b %Y') }}</span></p>
+  </div>
+  <a class="btn" href="{{ url_for('records.view_record', record_id=prescription.medical_record_id) }}">Back to record</a>
+</div>
+
+<div class="panel">
+  {% if prescription.notes %}<p class="text-muted">{{ prescription.notes }}</p>{% endif %}
+  <table>
+    <thead><tr><th>Medicine</th><th>Dosage</th><th>Qty</th><th>Dispensed</th></tr></thead>
+    <tbody>
+      {% for item in prescription.items %}
+      <tr>
+        <td>{{ item.medicine.name }}</td>
+        <td class="text-muted">{{ item.dosage or '—' }}</td>
+        <td class="mono">{{ item.quantity }}</td>
+        <td class="mono">{{ item.dispensed_qty }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

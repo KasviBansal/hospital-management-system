@@ -1,0 +1,256 @@
+{% import "_icons.html" as ic %}
+{% macro nav(endpoint, label, icon, match=None, bp=None) -%}
+  {% set is_active = (request.endpoint == endpoint) or (match and request.endpoint in match) or (bp and request.blueprint == bp) %}
+  <a class="nav-link {{ 'active' if is_active }}" href="{{ url_for(endpoint) }}" data-nav>{{ ic[icon]() }}<span>{{ label }}</span></a>
+{%- endmacro %}
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Hospital Management System{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script>try{var t=localStorage.getItem('hms-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+</head>
+<body>
+{% set role = session.role %}
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-mark">{{ ic.hospital() }}</span>
+      <h1>HMS<small>Hospital Management</small></h1>
+    </div>
+
+    {% if role == 'admin' %}
+      {{ nav('auth.admin_dashboard','Dashboard','dashboard') }}
+      <div class="nav-group-label">Care</div>
+      {{ nav('patients.list_patients','Patients','patients',bp='patients') }}
+      {{ nav('doctors.list_doctors','Doctors','doctors',bp='doctors') }}
+      {{ nav('appointments.list_appointments','Appointments','appointments',bp='appointments') }}
+      {{ nav('records.list_records','Records & Rx','records',bp='records') }}
+      {{ nav('lab_reports.list_reports','Lab Reports','labreports',bp='lab_reports') }}
+      <div class="nav-group-label">Operations</div>
+      {{ nav('auth.staff_list','Manage Staff','staff',match=['auth.staff_new','auth.staff_edit']) }}
+      {{ nav('leave.admin_leaves','Leave Requests','leave') }}
+      {{ nav('pharmacy.list_medicines','Medicine Inventory','pharmacy') }}
+      {{ nav('pharmacy.dispense_queue','Dispense Queue','dispense',match=['pharmacy.dispense_item']) }}
+      {{ nav('pharmacy.billing','Medicine Billing','billing') }}
+      {{ nav('cafeteria.admin_menu','Cafeteria Menu','cafeteria',match=['cafeteria.admin_menu_new','cafeteria.admin_menu_edit']) }}
+      {{ nav('cafeteria.admin_orders','Cafeteria Orders','orders') }}
+      {{ nav('complaints.admin_complaints','Complaints','complaints') }}
+      {{ nav('payments.history','All Payments','payments') }}
+    {% elif role == 'doctor' %}
+      {{ nav('auth.doctor_dashboard','Dashboard','dashboard') }}
+      <div class="nav-group-label">My Practice</div>
+      {{ nav('appointments.list_appointments','My Appointments','appointments',bp='appointments') }}
+      {{ nav('records.list_records','Records & Rx','records',bp='records') }}
+      {{ nav('lab_reports.list_reports','Patient Lab Reports','labreports',bp='lab_reports') }}
+      {{ nav('leave.my_leaves','My Leave','leave',match=['leave.new_leave']) }}
+      <div class="nav-group-label">Cafeteria</div>
+      {{ nav('cafeteria.menu','Order Food','cafeteria') }}
+      {{ nav('cafeteria.my_orders','My Orders','orders') }}
+      <div class="nav-group-label">Other</div>
+      {{ nav('complaints.new_complaint','Report an Issue','complaints') }}
+      {{ nav('complaints.my_complaints','My Complaints','complaints') }}
+      {{ nav('payments.history','Payments','payments') }}
+    {% elif role == 'patient' %}
+      {{ nav('auth.patient_dashboard','Dashboard','dashboard') }}
+      <div class="nav-group-label">My Care</div>
+      {{ nav('appointments.list_appointments','Appointments','appointments',bp='appointments') }}
+      {{ nav('records.list_records','Medical Records','records',bp='records') }}
+      {{ nav('lab_reports.list_reports','Lab Reports','labreports',bp='lab_reports') }}
+      <div class="nav-group-label">Cafeteria</div>
+      {{ nav('cafeteria.menu','Order Food','cafeteria') }}
+      {{ nav('cafeteria.my_orders','My Orders','orders') }}
+      <div class="nav-group-label">Other</div>
+      {{ nav('complaints.new_complaint','Report an Issue','complaints') }}
+      {{ nav('complaints.my_complaints','My Complaints','complaints') }}
+      {{ nav('payments.history','Payments','payments') }}
+    {% elif role == 'pharmacy' %}
+      {{ nav('auth.pharmacy_dashboard','Dashboard','dashboard') }}
+      <div class="nav-group-label">Pharmacy</div>
+      {{ nav('pharmacy.list_medicines','Medicine Inventory','pharmacy') }}
+      {{ nav('pharmacy.dispense_queue','Dispense Queue','dispense',match=['pharmacy.dispense_item']) }}
+      {{ nav('pharmacy.billing','Billing','billing') }}
+    {% endif %}
+    <div class="nav-group-label">Info</div>
+    {{ nav('auth.about','About the Hospital','about') }}
+
+    <div class="sidebar-spacer"></div>
+    <div class="appearance">
+      <div class="label">Appearance</div>
+      <div class="appearance-row">{{ ic.moon() }}<span>Dark mode</span>
+        <button type="button" class="switch" id="themeSwitch" aria-label="Toggle dark mode"></button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="global-search">
+        <input type="search" id="globalSearch" placeholder="Search pages…" autocomplete="off" aria-label="Search pages">
+        {{ ic.search() }}
+        <div class="search-results" id="searchResults"></div>
+      </div>
+      <div class="topbar-user">
+        <div class="popover-wrap">
+          <button type="button" class="icon-btn" id="bellBtn" aria-label="Notifications">
+            {{ ic.bell() }}<span class="badge-dot" id="bellCount">0</span>
+          </button>
+          <div class="popover" id="bellPop">
+            <div class="popover-head">Notifications <button type="button" id="markAll">Mark all read</button></div>
+            <div class="popover-list" id="bellList"><div class="popover-empty">Loading…</div></div>
+            <div class="popover-foot"><a href="{{ url_for('notifications.list_notifications') }}">View all</a></div>
+          </div>
+        </div>
+        {% if current_user %}
+        <div class="popover-wrap">
+          <button type="button" class="user-menu-btn" id="userBtn">
+            <span class="avatar">{{ current_user.name[:1]|upper }}</span>
+            <span class="user-meta"><span class="n">{{ current_user.name }}</span><span class="e">{{ current_user.email }}</span></span>
+          </button>
+          <div class="popover menu-list" id="userPop">
+            <div class="who"><b>{{ current_user.name }}</b><span>{{ current_user.role|capitalize }}</span></div>
+            <a href="{{ url_for('auth.about') }}">{{ ic.about() }} About</a>
+            <a href="{{ url_for('auth.logout') }}">{{ ic.logout() }} Log out</a>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="toast-stack" id="toasts"></div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <script>window.__flashes = {{ messages|tojson }};</script>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+</div>
+
+{% if role == 'patient' %}
+<button type="button" class="chat-fab" id="chatFab" aria-label="Open help assistant">{{ ic.chat() }}</button>
+<div class="chat-panel" id="chatPanel" role="dialog" aria-label="Help assistant">
+  <div class="chat-head">
+    <span class="avatar">{{ ic.robot() }}</span>
+    <div><b>Help Assistant</b><span>Site help &amp; doctor availability</span></div>
+    <button type="button" id="chatClose" aria-label="Close">{{ ic.close() }}</button>
+  </div>
+  <div class="chat-body" id="chatBody">
+    <div class="msg bot">Hi! I can help you use this site and tell you whether a doctor is available. I can't answer health or medicine questions &mdash; please ask your doctor for those.</div>
+  </div>
+  <div class="chat-suggest" id="chatSuggest">
+    <button type="button">How do I book an appointment?</button>
+    <button type="button">Is any doctor available today?</button>
+    <button type="button">How do I upload a lab report?</button>
+  </div>
+  <form class="chat-form" id="chatForm">
+    <input type="text" id="chatInput" placeholder="Ask about the site or a doctor…" maxlength="300" autocomplete="off">
+    <button type="submit" aria-label="Send">{{ ic.send() }}</button>
+  </form>
+</div>
+{% endif %}
+
+<script>
+(function(){
+  var root=document.documentElement;
+  function $(id){return document.getElementById(id);}
+  var ICONS={success:{{ ic.check('icon')|tojson }},error:{{ ic.error('icon')|tojson }},warning:{{ ic.warning('icon')|tojson }},info:{{ ic.info('icon')|tojson }},alert:{{ ic.error('icon')|tojson }}};
+
+  /* theme */
+  $('themeSwitch').onclick=function(){
+    var n=root.getAttribute('data-theme')==='dark'?'light':'dark';
+    root.setAttribute('data-theme',n);
+    try{localStorage.setItem('hms-theme',n);}catch(e){}
+  };
+
+  /* toasts */
+  function toast(msg,cat,title){
+    cat=ICONS[cat]?cat:'info';
+    var el=document.createElement('div');el.className='toast '+cat;
+    el.setAttribute('role',cat==='error'||cat==='alert'?'alert':'status');
+    el.innerHTML='<span class="t-ico">'+ICONS[cat]+'</span><div class="t-body">'+(title?'<b></b>':'')+'<span class="tm"></span></div><button class="t-close" aria-label="Dismiss">&times;</button>';
+    if(title)el.querySelector('b').textContent=title;
+    el.querySelector('.tm').textContent=msg;
+    function close(){el.classList.add('leaving');setTimeout(function(){el.remove();},260);}
+    el.querySelector('.t-close').onclick=close;
+    $('toasts').appendChild(el);setTimeout(close,6000);
+  }
+  window.hmsToast=toast;
+  (window.__flashes||[]).forEach(function(f){toast(f[1],f[0]==='error'?'error':'success');});
+
+  /* popovers */
+  function bindPop(btn,pop,onOpen){
+    if(!btn)return;
+    btn.onclick=function(e){e.stopPropagation();
+      var open=pop.classList.contains('open');
+      document.querySelectorAll('.popover.open').forEach(function(p){p.classList.remove('open');});
+      if(!open){pop.classList.add('open');if(onOpen)onOpen();}
+    };
+    pop.onclick=function(e){e.stopPropagation();};
+  }
+  document.addEventListener('click',function(){document.querySelectorAll('.popover.open').forEach(function(p){p.classList.remove('open');});$('searchResults').classList.remove('open');});
+
+  /* notifications */
+  var seen=null;
+  function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+  function loadNotes(showToasts){
+    fetch('{{ url_for("notifications.api_recent") }}',{credentials:'same-origin'}).then(function(r){return r.json();}).then(function(d){
+      var c=$('bellCount');c.textContent=d.unread_count>99?'99+':d.unread_count;c.classList.toggle('show',d.unread_count>0);
+      var list=$('bellList');
+      if(!d.notifications.length){list.innerHTML='<div class="popover-empty">You\'re all caught up.</div>';}
+      else{list.innerHTML=d.notifications.map(function(n){
+        return '<a class="notif-row '+(n.is_read?'':'notif-unread')+'" href="'+n.url+'"><span class="notif-dot notif-dot-'+esc(n.category)+'"></span><span class="notif-text">'+esc(n.message)+'</span><span class="notif-time">'+esc(n.created_at)+'</span></a>';
+      }).join('');}
+      var ids=d.notifications.filter(function(n){return !n.is_read;}).map(function(n){return n.id;});
+      if(seen!==null&&showToasts){d.notifications.forEach(function(n){if(!n.is_read&&seen.indexOf(n.id)<0)toast(n.message,n.category,'New alert');});}
+      seen=d.notifications.map(function(n){return n.id;});
+      if(!showToasts){ /* first load: surface the newest unread as one toast */
+        var first=d.notifications.filter(function(n){return !n.is_read;})[0];
+        if(first)toast(first.message,first.category,d.unread_count>1?('You have '+d.unread_count+' unread alerts'):'New alert');
+      }
+    }).catch(function(){});
+  }
+  bindPop($('bellBtn'),$('bellPop'),function(){loadNotes(true);});
+  $('markAll').onclick=function(){fetch('{{ url_for("notifications.mark_all_read") }}',{method:'POST',credentials:'same-origin'}).then(function(){loadNotes(true);});};
+  loadNotes(false);setInterval(function(){loadNotes(true);},45000);
+  bindPop($('userBtn'),$('userPop'));
+
+  /* page search over sidebar links */
+  var links=[].slice.call(document.querySelectorAll('[data-nav]')).map(function(a){return {t:a.textContent.trim(),h:a.getAttribute('href')};});
+  var si=$('globalSearch'),sr=$('searchResults');
+  si.addEventListener('input',function(){
+    var q=si.value.trim().toLowerCase();
+    if(!q){sr.classList.remove('open');return;}
+    var m=links.filter(function(l){return l.t.toLowerCase().indexOf(q)>-1;}).slice(0,6);
+    sr.innerHTML=m.length?m.map(function(l){return '<a href="'+l.h+'">'+esc(l.t)+'</a>';}).join(''):'<div class="none">No matching page</div>';
+    sr.classList.add('open');
+  });
+  si.addEventListener('keydown',function(e){if(e.key==='Enter'){var a=sr.querySelector('a');if(a){window.location=a.getAttribute('href');}}});
+  si.addEventListener('click',function(e){e.stopPropagation();});
+
+  /* chatbot (patients only) */
+  var fab=$('chatFab');
+  if(fab){
+    var panel=$('chatPanel'),body=$('chatBody');
+    fab.onclick=function(){panel.classList.toggle('open');if(panel.classList.contains('open'))$('chatInput').focus();};
+    $('chatClose').onclick=function(){panel.classList.remove('open');};
+    function add(text,cls){var d=document.createElement('div');d.className='msg '+cls;d.textContent=text;body.appendChild(d);body.scrollTop=body.scrollHeight;return d;}
+    function ask(text){
+      if(!text)return;add(text,'user');$('chatSuggest').style.display='none';
+      var t=add('Typing…','bot typing');
+      fetch('{{ url_for("chatbot.ask") }}',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text})})
+        .then(function(r){return r.json();}).then(function(d){t.className='msg bot';t.innerHTML=esc(d.reply).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');body.scrollTop=body.scrollHeight;})
+        .catch(function(){t.className='msg bot';t.textContent='Sorry, I could not reach the server. Please try again.';});
+    }
+    $('chatForm').onsubmit=function(e){e.preventDefault();var i=$('chatInput');var v=i.value.trim();i.value='';ask(v);};
+    [].forEach.call($('chatSuggest').querySelectorAll('button'),function(b){b.onclick=function(){ask(b.textContent);};});
+  }
+})();
+</script>
+</body>
+</html>

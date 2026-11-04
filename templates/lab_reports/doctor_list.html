@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Patient Lab Reports — HMS{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Patient Lab Reports</h2>
+    <p class="subtitle">Reports for patients you've treated.</p>
+  </div>
+</div>
+
+{% if reports %}
+<div class="panel">
+  <table>
+    <thead><tr><th>Date</th><th>Patient</th><th>Test</th><th>Source</th><th></th></tr></thead>
+    <tbody>
+      {% for r in reports %}
+      <tr>
+        <td class="mono">{{ r.report_date.strftime('%d %b %Y') }}</td>
+        <td>{{ r.patient.name }}</td>
+        <td>{{ r.test_name }}</td>
+        <td><span class="badge {{ 'badge-completed' if r.source == 'Hospital Lab' else 'badge-booked' }}">{{ r.source }}</span></td>
+        <td class="table-actions">
+          <a class="btn btn-sm" href="{{ url_for('lab_reports.view_report', report_id=r.id) }}">View</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="panel"><div class="empty-state"><div class="big">No lab reports for your patients yet.</div></div></div>
+{% endif %}
+{% endblock %}

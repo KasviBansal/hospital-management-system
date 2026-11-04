@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ patient.name }} — HMS{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>{{ patient.name }}</h2>
+    <p class="subtitle">Patient ID <span class="mono">P-{{ "%04d"|format(patient.id) }}</span> &middot; {{ patient.age }} yrs &middot; {{ patient.gender }}</p>
+  </div>
+  <a class="btn" href="{{ url_for('patients.edit_patient', patient_id=patient.id) }}">Edit details</a>
+</div>
+
+<div class="two-col">
+  <div class="panel">
+    <h3>Appointment history</h3>
+    {% if patient.appointments %}
+    <table>
+      <thead><tr><th>Date</th><th>Time</th><th>Doctor</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for a in patient.appointments|sort(attribute='appt_date', reverse=true) %}
+        <tr>
+          <td class="mono">{{ a.appt_date.strftime('%d %b %Y') }}</td>
+          <td class="mono">{{ a.appt_time }}</td>
+          <td>Dr. {{ a.doctor.name }}</td>
+          <td><span class="badge badge-{{ a.status|lower }}">{{ a.status }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state"><div class="big">No appointments yet.</div></div>
+    {% endif %}
+  </div>
+
+  <div class="panel">
+    <h3>Medical history</h3>
+    {% if patient.medical_records %}
+      {% for r in patient.medical_records|sort(attribute='record_date', reverse=true) %}
+      <p style="margin: 0 0 12px;">
+        <span class="mono text-muted">{{ r.record_date.strftime('%d %b %Y') }}</span> —
+        <a href="{{ url_for('records.view_record', record_id=r.id) }}">{{ r.diagnosis }}</a>
+        <br><span class="text-muted" style="font-size:13px;">Dr. {{ r.doctor.name }}</span>
+      </p>
+      {% endfor %}
+    {% else %}
+    <div class="empty-state"><div class="big">No medical records yet.</div></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

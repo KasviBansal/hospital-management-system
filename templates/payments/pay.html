@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Payment — HMS{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>{{ 'Appointment Payment' if purpose == 'appointment' else 'Cafeteria Payment' }}</h2>
+    <p class="subtitle">This is a simulated payment for demo purposes — no real money moves.</p>
+  </div>
+</div>
+
+<div class="panel form-panel">
+  <div class="payment-summary">
+    {% if purpose == 'appointment' %}
+      <div>Appointment with <strong>Dr. {{ obj.doctor.name }}</strong> on
+        <span class="mono">{{ obj.appt_date.strftime('%d %b %Y') }}</span> at <span class="mono">{{ obj.appt_time }}</span></div>
+    {% else %}
+      <div>Cafeteria order <strong>#{{ obj.id }}</strong> &middot; {{ obj.items|length }} item(s) to
+        <strong>{{ obj.delivery_location }}</strong></div>
+    {% endif %}
+    <div class="amount">Rs. {{ "%.2f"|format(amount) }}</div>
+  </div>
+
+  {% if already_paid %}
+    <div class="flash flash-success">This has already been paid. No action needed.</div>
+    <a class="btn" href="{{ url_for('appointments.list_appointments') if purpose == 'appointment' else url_for('cafeteria.my_orders') }}">
+      {{ 'Back to appointments' if purpose == 'appointment' else 'Back to my orders' }}
+    </a>
+  {% else %}
+  <form method="post">
+    <label style="display:block; font-size:13px; font-weight:600; color:var(--muted-ink); margin-bottom:10px;">Payment method</label>
+    <div class="method-toggle">
+      <label class="method-option"><input type="radio" name="method" value="Mock Card" checked> Card</label>
+      <label class="method-option"><input type="radio" name="method" value="Mock UPI"> UPI</label>
+    </div>
+
+    <div class="field">
+      <label for="card_number">Card number</label>
+      <input type="text" id="card_number" name="card_number" placeholder="4242 4242 4242 4242" maxlength="19">
+      <p class="hint">Simulated — any digits work, this does not charge a real card.</p>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label for="expiry">Expiry</label>
+        <input type="text" id="expiry" name="expiry" placeholder="MM/YY">
+      </div>
+      <div class="field">
+        <label for="cvv">CVV</label>
+        <input type="text" id="cvv" name="cvv" placeholder="123" maxlength="4">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit" style="width:100%; justify-content:center;">Pay Rs. {{ "%.2f"|format(amount) }}</button>
+    </div>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% import "auth/_widgets.html" as w %}
+{% block title %}Doctor Dashboard — HMS{% endblock %}
+{% block content %}
+<div class="page-header"><div><h2>Welcome, Dr. {{ doctor.name }}</h2>
+  <p class="subtitle">{{ doctor.specialization }} · {{ doctor.available_days or 'Availability not set' }} {{ doctor.available_time or '' }}</p></div>
+  <a class="btn btn-primary" href="{{ url_for('leave.new_leave') }}">{{ icons.leave() }} Request leave</a></div>
+{% if on_leave_today %}<div class="flash flash-error">You are on approved leave today.</div>{% endif %}
+<div class="stat-grid">
+  {{ w.stat('appointments', todays_appts|length, 'Appointments today') }}
+  {{ w.stat('calendar', upcoming|length, 'Upcoming appointments', 'green') }}
+  {{ w.stat('leave', pending_leave_count, 'Pending leave requests', 'amber') }}
+  {{ w.stat('money', '%.0f'|format(doctor.consultation_fee), 'Consultation fee') }}
+</div>
+<div class="two-col">
+  <div class="panel"><h3>Today's schedule</h3>
+    {% if todays_appts %}<table><thead><tr><th>Time</th><th>Patient</th><th>Reason</th><th>Status</th></tr></thead><tbody>
+      {% for a in todays_appts %}<tr><td class="mono">{{ a.appt_time }}</td><td>{{ a.patient.name }}</td><td>{{ a.reason or '—' }}</td><td><span class="badge badge-booked">Pending</span></td></tr>{% endfor %}
+    </tbody></table>{% else %}<div class="empty-state">No appointments today.</div>{% endif %}</div>
+  <div class="panel"><h3>Upcoming</h3>
+    {% for a in upcoming %}<p style="margin:0 0 12px"><strong>{{ a.patient.name }}</strong><br><span class="text-muted">{{ a.appt_date.strftime('%d %b') }} · {{ a.appt_time }}</span></p>
+    {% else %}<div class="empty-state">Nothing scheduled.</div>{% endfor %}</div>
+</div>
+<div class="panel" style="margin-top:20px"><h3>Recent records <a class="btn btn-sm" href="{{ url_for('records.list_records') }}">View all</a></h3>
+  {% if recent_records %}<table><thead><tr><th>Patient</th><th>Diagnosis</th><th>Date</th></tr></thead><tbody>
+    {% for r in recent_records %}<tr><td>{{ r.patient.name }}</td><td>{{ r.diagnosis }}</td><td>{{ r.record_date.strftime("%d %b %Y") }}</td></tr>{% endfor %}
+  </tbody></table>{% else %}<div class="empty-state">No records yet.</div>{% endif %}</div>
+{% endblock %}

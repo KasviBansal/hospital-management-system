@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if record else 'New' }} Medical Record — HMS{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>{{ 'Edit medical record' if record else 'New medical record' }}</h2>
+    <p class="subtitle">
+      {% if linked_appt %}
+        Recording the outcome of the appointment with {{ linked_appt.patient.name }} on {{ linked_appt.appt_date.strftime('%d %b %Y') }}.
+      {% else %}
+        Diagnosis and treatment details for a consultation.
+      {% endif %}
+    </p>
+  </div>
+</div>
+
+<div class="panel form-panel">
+  <form method="post">
+    {% if linked_appt %}<input type="hidden" name="appointment_id" value="{{ linked_appt.id }}">{% endif %}
+    <div class="field-row">
+      <div class="field">
+        <label for="patient_id">Patient</label>
+        {% if linked_appt or record %}
+          <input type="text" value="{{ (record.patient.name if record else linked_appt.patient.name) }}" disabled>
+          <input type="hidden" name="patient_id" value="{{ record.patient_id if record else linked_appt.patient_id }}">
+        {% else %}
+        <select id="patient_id" name="patient_id" required>
+          <option value="">Select patient...</option>
+          {% for p in patients %}
+          <option value="{{ p.id }}" {{ 'selected' if form.get('patient_id')|string == p.id|string }}>{{ p.name }} (P-{{ "%04d"|format(p.id) }})</option>
+          {% endfor %}
+        </select>
+        {% endif %}
+      </div>
+      <div class="field">
+        <label for="doctor_id">Doctor</label>
+        {% if linked_appt or record %}
+          <input type="text" value="Dr. {{ (record.doctor.name if record else linked_appt.doctor.name) }}" disabled>
+          <input type="hidden" name="doctor_id" value="{{ record.doctor_id if record else linked_appt.doctor_id }}">
+        {% elif own_doctor %}
+          <input type="text" value="Dr. {{ own_doctor.name }} ({{ own_doctor.specialization }})" disabled>
+        {% else %}
+        <select id="doctor_id" name="doctor_id" required>
+          <option value="">Select doctor...</option>
+          {% for d in doctors %}
+          <option value="{{ d.id }}" {{ 'selected' if form.get('doctor_id')|string == d.id|string }}>Dr. {{ d.name }} — {{ d.specialization }}</option>
+          {% endfor %}
+        </select>
+        {% endif %}
+      </div>
+    </div>
+    <div class="field">
+      <label for="record_date">Consultation date</label>
+      <input type="date" id="record_date" name="record_date" value="{{ form.get('record_date', '') }}">
+    </div>
+    <div class="field">
+      <label for="diagnosis">Diagnosis</label>
+      <input type="text" id="diagnosis" name="diagnosis" value="{{ form.get('diagnosis', '') }}" required>
+    </div>
+    <div class="field">
+      <label for="treatment">Treatment notes</label>
+      <textarea id="treatment" name="treatment" rows="4">{{ form.get('treatment', '') }}</textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">{{ 'Save changes' if record else 'Save record' }}</button>
+      <a class="btn" href="{{ url_for('records.list_records') }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

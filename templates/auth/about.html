@@ -1,0 +1,45 @@
+{% extends "public_base.html" if not current_user else "base.html" %}
+{% block title %}About Us — HMS{% endblock %}
+{% block content %}
+<div class="about-hero">
+  <h2>About Our Hospital</h2>
+  <p>A multi-specialty hospital committed to accessible, well-coordinated care — from the first
+     appointment through diagnosis, treatment, and recovery.</p>
+</div>
+
+<div class="panel" style="margin-bottom: 20px;">
+  <h3>Our mission</h3>
+  <p>We aim to make quality healthcare simple to access and easy to navigate — for patients booking
+     a first visit, for doctors coordinating care, and for the staff keeping the hospital running
+     behind the scenes. This management system reflects that goal: one connected platform for
+     registration, consultations, records, medicines, and hospital services.</p>
+</div>
+
+<div class="about-grid">
+  <div class="about-stat"><span class="value">24/7</span><span class="label">Emergency & OPD support</span></div>
+  <div class="about-stat"><span class="value">Multi</span><span class="label">Specialty departments</span></div>
+  <div class="about-stat"><span class="value">In-house</span><span class="label">Pharmacy & Cafeteria</span></div>
+  <div class="about-stat"><span class="value">Digital</span><span class="label">Records & Prescriptions</span></div>
+</div>
+
+<div class="two-col">
+  <div class="panel">
+    <h3>What we offer</h3>
+    <p style="margin: 0 0 10px;">Outpatient consultations across departments including Cardiology,
+      General Medicine, and Pediatrics, with online appointment booking and digital prescriptions.</p>
+    <p style="margin: 0 0 10px;">An in-house pharmacy that fills prescriptions directly from your
+      doctor's visit, with transparent billing.</p>
+    <p style="margin: 0;">A hospital cafeteria offering meals and refreshments, orderable directly
+      by patients and doctors from their rooms or wards.</p>
+  </div>
+  <div class="panel">
+    <h3>Visiting &amp; contact</h3>
+    <p style="margin: 0 0 10px;"><strong>Address:</strong> Hospital Campus, Patiala, Punjab, India</p>
+    <p style="margin: 0 0 10px;"><strong>OPD hours:</strong> Monday – Saturday, 9:00 AM – 5:00 PM</p>
+    <p style="margin: 0 0 10px;"><strong>Emergency:</strong> Open 24 hours</p>
+    <p style="margin: 0;"><strong>Facility feedback:</strong> Patients and doctors can report
+      cleanliness, plumbing, or maintenance issues directly through their portal, routed straight
+      to hospital administration.</p>
+  </div>
+</div>
+{% endblock %}

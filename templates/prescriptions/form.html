@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}New Prescription — HMS{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>New prescription</h2>
+    <p class="subtitle">For {{ record.patient.name }} &middot; Dr. {{ record.doctor.name }} &middot; diagnosis: {{ record.diagnosis }}</p>
+  </div>
+</div>
+
+<div class="panel" style="max-width: 760px;">
+  {% if not medicines %}
+    <p class="text-alert">No medicines exist in the pharmacy inventory yet. Add medicines under
+      <a href="{{ url_for('pharmacy.new_medicine') }}">Pharmacy &rarr; Medicine Inventory</a> first.</p>
+  {% else %}
+  <form method="post">
+    <div class="field">
+      <label for="notes">Notes (optional)</label>
+      <input type="text" id="notes" name="notes" placeholder="e.g. Take after meals">
+    </div>
+
+    <hr class="section-divider">
+
+    <label style="display:block; font-size:13px; font-weight:600; color:var(--muted-ink); margin-bottom:10px;">Medicines</label>
+    <div id="item-rows">
+      <div class="item-row">
+        <div class="field" style="margin:0;">
+          <select name="medicine_id[]" required>
+            <option value="">Select medicine...</option>
+            {% for m in medicines %}
+            <option value="{{ m.id }}">{{ m.name }} (stock: {{ m.stock_qty }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field" style="margin:0;">
+          <input type="text" name="dosage[]" placeholder="Dosage, e.g. 1 tab twice daily">
+        </div>
+        <div class="field" style="margin:0;">
+          <input type="number" name="quantity[]" min="1" placeholder="Qty" required>
+        </div>
+        <button type="button" class="btn btn-sm remove-row" style="visibility:hidden;">&times;</button>
+      </div>
+    </div>
+    <button type="button" id="add-row" class="btn btn-sm" style="margin-top:4px;">+ Add another medicine</button>
+
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">Save prescription</button>
+      <a class="btn" href="{{ url_for('records.view_record', record_id=record.id) }}">Cancel</a>
+    </div>
+  </form>
+  {% endif %}
+</div>
+
+<script>
+  document.getElementById('add-row') && document.getElementById('add-row').addEventListener('click', function () {
+    const rows = document.getElementById('item-rows');
+    const first = rows.querySelector('.item-row');
+    const clone = first.cloneNode(true);
+    clone.querySelectorAll('input').forEach(el => el.value = '');
+    clone.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+    const removeBtn = clone.querySelector('.remove-row');
+    removeBtn.style.visibility = 'visible';
+    removeBtn.addEventListener('click', () => clone.remove());
+    rows.appendChild(clone);
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if doctor else 'Add' }} Doctor — HMS{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>{{ 'Edit doctor' if doctor else 'Add doctor' }}</h2>
+    <p class="subtitle">{{ 'Update staff details.' if doctor else 'Add a new doctor to the staff directory.' }}</p>
+  </div>
+</div>
+
+<div class="panel form-panel">
+  <form method="post">
+    <div class="field">
+      <label for="name">Full name</label>
+      <input type="text" id="name" name="name" value="{{ form.get('name', '') }}" placeholder="e.g. Anjali Mehra" required>
+    </div>
+    <div class="field">
+      <label for="specialization">Specialization</label>
+      <input type="text" id="specialization" name="specialization" value="{{ form.get('specialization', '') }}" placeholder="e.g. Cardiology" required>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label for="available_days">Available days</label>
+        <input type="text" id="available_days" name="available_days" value="{{ form.get('available_days', '') }}" placeholder="e.g. Mon, Wed, Fri">
+      </div>
+      <div class="field">
+        <label for="available_time">Available time</label>
+        <input type="text" id="available_time" name="available_time" value="{{ form.get('available_time', '') }}" placeholder="e.g. 10:00 - 14:00">
+      </div>
+    </div>
+    <div class="field">
+      <label for="phone">Phone number</label>
+      <input type="text" id="phone" name="phone" value="{{ form.get('phone', '') }}">
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">{{ 'Save changes' if doctor else 'Add doctor' }}</button>
+      <a class="btn" href="{{ url_for('doctors.list_doctors') }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

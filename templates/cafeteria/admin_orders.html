@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Cafeteria Orders — HMS{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Cafeteria Orders</h2>
+    <p class="subtitle">All orders, most recent first.</p>
+  </div>
+</div>
+
+<div class="panel">
+  <table>
+    <thead><tr><th>Order</th><th>Placed by</th><th>Location</th><th>Items</th><th>Amount</th><th>Payment</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for o in orders %}
+      <tr>
+        <td class="mono">#{{ o.id }}</td>
+        <td>{{ o.user.name }} <span class="text-muted">({{ o.user.role }})</span></td>
+        <td>{{ o.delivery_location }}</td>
+        <td class="mono">{{ o.items|length }}</td>
+        <td class="mono">Rs. {{ "%.2f"|format(o.total_amount) }}</td>
+        <td>{% if o.payment_status == 'Paid' %}<span class="badge badge-completed">Paid</span>{% else %}<span class="badge badge-alert">Unpaid</span>{% endif %}</td>
+        <td class="table-actions">
+          {% if o.payment_status == 'Paid' and o.status not in ['Delivered', 'Cancelled'] %}
+          <form method="post" action="{{ url_for('cafeteria.admin_order_status', order_id=o.id) }}">
+            <select name="status" onchange="this.form.submit()">
+              <option value="">{{ o.status }}</option>
+              <option value="Preparing">Preparing</option>
+              <option value="Ready">Ready</option>
+              <option value="Delivered">Delivered</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </form>
+          {% else %}
+          <span class="badge {{ 'badge-cancelled' if o.status == 'Cancelled' else 'badge-completed' }}">{{ o.status }}</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr class="empty-row"><td colspan="7">No cafeteria orders yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

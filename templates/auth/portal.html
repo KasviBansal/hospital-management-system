@@ -1,0 +1,35 @@
+{% extends "public_base.html" %}
+{% block title %}Sign in — Hospital Management System{% endblock %}
+{% block content %}
+<div class="hero">
+  <h2>One system, four portals.</h2>
+  <p>Choose how you'd like to sign in. Patients can also register for a new account below.</p>
+</div>
+
+<div class="role-grid">
+  <a class="role-card" href="{{ url_for('auth.login', role='patient') }}">
+    <div class="role-icon">PT</div>
+    <h3>Patient</h3>
+    <p>Book appointments, view your medical records, order from the cafeteria, and raise complaints.</p>
+  </a>
+  <a class="role-card" href="{{ url_for('auth.login', role='doctor') }}">
+    <div class="role-icon">DR</div>
+    <h3>Doctor</h3>
+    <p>View your schedule, add medical records and prescriptions, order food, and report facility issues.</p>
+  </a>
+  <a class="role-card" href="{{ url_for('auth.login', role='pharmacy') }}">
+    <div class="role-icon">PH</div>
+    <h3>Pharmacy Staff</h3>
+    <p>Manage medicine inventory, dispense prescriptions, and track billing.</p>
+  </a>
+  <a class="role-card" href="{{ url_for('auth.login', role='admin') }}">
+    <div class="role-icon">AD</div>
+    <h3>Admin</h3>
+    <p>Oversee patients, doctors, staff accounts, cafeteria menu, complaints, and hospital finances.</p>
+  </a>
+</div>
+
+<p class="auth-footer-note" style="margin-top: 30px;">
+  New patient? <a href="{{ url_for('auth.signup_patient') }}">Create an account</a>
+</p>
+{% endblock %}

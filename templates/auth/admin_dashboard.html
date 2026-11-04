@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% import "auth/_widgets.html" as w %}
+{% block title %}Admin Dashboard — HMS{% endblock %}
+{% block content %}
+<div class="page-header"><div><h2>Admin Overview</h2><p class="subtitle">Hospital-wide snapshot across every module.</p></div>
+  <a class="btn btn-primary" href="{{ url_for('auth.staff_new') }}">{{ icons.addperson() }} Add staff</a></div>
+
+<div class="stat-grid">
+  {{ w.stat('patients', stats.patients, 'Registered patients') }}
+  {{ w.stat('doctors', stats.doctors, 'Doctors on staff', 'green') }}
+  {{ w.stat('appointments', stats.appointments_today, 'Appointments today') }}
+  {{ w.stat('leave', stats.pending_leaves, 'Pending leave requests', 'amber') }}
+  {{ w.stat('complaints', stats.open_complaints, 'Open complaints', 'red') }}
+  {{ w.stat('orders', stats.cafeteria_orders_active, 'Active cafeteria orders', 'amber') }}
+</div>
+
+<div class="two-col">
+  <div class="panel">
+    <h3>Appointments — next 7 days</h3>
+    <svg viewBox="0 0 560 190" style="width:100%;height:auto" role="img" aria-label="Appointments per day for the next seven days">
+      {% for x in load %}
+        {% set h = (x.count / max_load * 120)|round|int %}
+        <rect x="{{ 20 + loop.index0*76 }}" y="{{ 140 - h }}" width="44" height="{{ h if h else 3 }}" rx="8" fill="var(--primary)" opacity="{{ 1 if x.count else 0.25 }}"/>
+        <text x="{{ 42 + loop.index0*76 }}" y="{{ 132 - h }}" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">{{ x.count }}</text>
+        <text x="{{ 42 + loop.index0*76 }}" y="162" text-anchor="middle" font-size="12" fill="var(--muted-ink)">{{ x.label }}</text>
+        <text x="{{ 42 + loop.index0*76 }}" y="178" text-anchor="middle" font-size="10.5" fill="var(--faint-ink)">{{ x.date }}</text>
+      {% endfor %}
+    </svg>
+  </div>
+  <div class="panel">{{ w.calendar(weeks, today, booked_days, month_name) }}</div>
+</div>
+
+<div class="two-col" style="margin-top:20px">
+  <div class="panel">
+    <h3>Upcoming appointments <a class="btn btn-sm" href="{{ url_for('appointments.list_appointments') }}">View all</a></h3>
+    {% if upcoming %}<table><thead><tr><th>Date</th><th>Time</th><th>Patient</th><th>Doctor</th><th>Status</th></tr></thead><tbody>
+      {% for a in upcoming %}<tr><td>{{ a.appt_date.strftime('%d %b') }}</td><td class="mono">{{ a.appt_time }}</td><td>{{ a.patient.name }}</td><td>Dr. {{ a.doctor.name }}</td>
+        <td><span class="badge {{ 'badge-completed' if a.payment_status=='Paid' else 'badge-warn' }}">{{ 'Paid' if a.payment_status=='Paid' else 'Pending' }}</span></td></tr>{% endfor %}
+    </tbody></table>{% else %}<div class="empty-state">No upcoming appointments.</div>{% endif %}
+  </div>
+  <div class="panel">
+    <h3>Leave requests <a class="btn btn-sm" href="{{ url_for('leave.admin_leaves') }}">Review</a></h3>
+    {% for l in pending_leaves %}<p style="margin:0 0 12px"><strong>Dr. {{ l.doctor.name }}</strong><br><span class="text-muted">{{ l.start_date.strftime('%d %b') }} – {{ l.end_date.strftime('%d %b') }} · {{ l.reason or 'No reason given' }}</span></p>
+    {% else %}<div class="empty-state">No pending requests.</div>{% endfor %}
+  </div>
+</div>
+
+<div class="two-col" style="margin-top:20px">
+  <div class="panel">
+    <h3>Recent complaints <a class="btn btn-sm" href="{{ url_for('complaints.admin_complaints') }}">View all</a></h3>
+    {% for c in recent_complaints %}<p style="margin:0 0 12px"><span class="badge {{ 'badge-alert' if c.status=='Open' else ('badge-warn' if c.status=='In Progress' else 'badge-completed') }}">{{ c.status }}</span>
+      <strong>{{ c.category }}</strong> — {{ c.location }}<br><span class="text-muted" style="font-size:12.5px">{{ c.user.name }} · {{ c.created_at.strftime('%d %b') }}</span></p>
+    {% else %}<div class="empty-state">No complaints reported.</div>{% endfor %}
+  </div>
+  <div class="panel">
+    <h3>Pharmacy alerts</h3>
+    {% for m in low_stock %}<p style="margin:0 0 10px"><span class="badge badge-alert">Low stock</span> <strong>{{ m.name }}</strong> — {{ m.stock_qty }} left</p>{% endfor %}
+    {% for m in near_expiry %}<p style="margin:0 0 10px"><span class="badge badge-warn">{{ 'Expired' if m.is_expired else 'Expiring soon' }}</span> <strong>{{ m.name }}</strong> — {{ m.expiry_date.strftime('%d %b %Y') }}</p>{% endfor %}
+    {% if not low_stock and not near_expiry %}<div class="empty-state">No pharmacy alerts.</div>{% endif %}
+  </div>
+</div>
+{% endblock %}

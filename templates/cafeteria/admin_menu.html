@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Cafeteria Menu — HMS{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Cafeteria Menu Management</h2>
+    <p class="subtitle"><span class="mono">{{ items|length }}/{{ limit }}</span> items on the menu.</p>
+  </div>
+  {% if items|length < limit %}
+  <a class="btn btn-primary" href="{{ url_for('cafeteria.admin_menu_new') }}">+ Add item</a>
+  {% else %}
+  <span class="text-muted">Menu is full — remove an item to add another.</span>
+  {% endif %}
+</div>
+
+<div class="panel">
+  <table>
+    <thead><tr><th>Name</th><th>Category</th><th>Price</th><th>Status</th><th></th></tr></thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td><img class="thumb" src="{{ url_for('static', filename='img/cafeteria/' ~ item.image_file) }}" alt="" style="margin-right:12px">{{ item.name }}</td>
+        <td class="text-muted">{{ item.category or '—' }}</td>
+        <td class="mono">Rs. {{ "%.2f"|format(item.price) }}</td>
+        <td>{% if item.available %}<span class="badge badge-completed">Available</span>{% else %}<span class="badge badge-cancelled">Hidden</span>{% endif %}</td>
+        <td class="table-actions">
+          <a class="btn btn-sm" href="{{ url_for('cafeteria.admin_menu_edit', item_id=item.id) }}">Edit</a>
+          <form method="post" action="{{ url_for('cafeteria.admin_menu_delete', item_id=item.id) }}"
+                onsubmit="return confirm('Remove {{ item.name }} from the menu?');">
+            <button class="btn btn-sm btn-danger" type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr class="empty-row"><td colspan="5">No menu items yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if item else 'Add' }} Menu Item — HMS{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>{{ 'Edit menu item' if item else 'Add menu item' }}</h2>
+  </div>
+</div>
+
+<div class="panel form-panel">
+  <form method="post">
+    <div class="field">
+      <label for="name">Item name</label>
+      <input type="text" id="name" name="name" value="{{ form.get('name', '') }}" required>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label for="category">Category</label>
+        <select id="category" name="category">
+          <option value="">Select...</option>
+          {% for c in ['Meals', 'Beverages', 'Snacks', 'Desserts'] %}
+          <option value="{{ c }}" {{ 'selected' if form.get('category') == c }}>{{ c }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="field">
+        <label for="price">Price (Rs.)</label>
+        <input type="number" id="price" name="price" min="0" step="0.01" value="{{ form.get('price', '') }}" required>
+      </div>
+    </div>
+    <div class="field">
+      <label for="description">Short description</label>
+      <input type="text" id="description" name="description" value="{{ form.get('description', '') }}">
+    </div>
+    {% if item %}
+    <div class="field">
+      <label style="display:flex; align-items:center; gap:8px; font-weight:400;">
+        <input type="checkbox" name="available" style="width:auto;" {{ 'checked' if item.available }}>
+        Available on the menu
+      </label>
+    </div>
+    {% endif %}
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">{{ 'Save changes' if item else 'Add item' }}</button>
+      <a class="btn" href="{{ url_for('cafeteria.admin_menu') }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

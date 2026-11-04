@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Request Leave — HMS{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Request leave</h2>
+    <p class="subtitle">Submitted requests go to Admin for approval. Patients booking on these dates will see you as unavailable once approved.</p>
+  </div>
+</div>
+
+<div class="panel form-panel">
+  <form method="post">
+    <div class="field-row">
+      <div class="field">
+        <label for="start_date">From</label>
+        <input type="date" id="start_date" name="start_date" min="{{ today_str }}" value="{{ form.get('start_date', '') }}" required>
+      </div>
+      <div class="field">
+        <label for="end_date">To</label>
+        <input type="date" id="end_date" name="end_date" min="{{ today_str }}" value="{{ form.get('end_date', '') }}" required>
+      </div>
+    </div>
+    <div class="field">
+      <label for="reason">Reason</label>
+      <textarea id="reason" name="reason" rows="3" placeholder="e.g. Personal leave, conference, medical leave">{{ form.get('reason', '') }}</textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit">Submit request</button>
+      <a class="btn" href="{{ url_for('leave.my_leaves') }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

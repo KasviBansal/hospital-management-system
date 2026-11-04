@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Staff Accounts — HMS{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Staff Accounts</h2>
+    <p class="subtitle">Doctor, pharmacy, and admin login accounts.</p>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('auth.staff_new') }}">+ Add staff account</a>
+</div>
+
+<div class="panel">
+  <table>
+    <thead><tr><th>Name</th><th>Role</th><th>Email</th><th>Phone</th><th></th></tr></thead>
+    <tbody>
+      {% for s in staff %}
+      <tr>
+        <td>{{ s.name }}{% if s.role == 'doctor' and s.doctor_profile %} <span class="text-muted">({{ s.doctor_profile.specialization }})</span>{% endif %}</td>
+        <td><span class="badge badge-booked">{{ s.role }}</span></td>
+        <td class="mono">{{ s.email }}</td>
+        <td class="mono">{{ s.phone or '—' }}</td>
+        <td class="table-actions">
+          <form method="post" action="{{ url_for('auth.staff_delete', user_id=s.id) }}"
+                onsubmit="return confirm('Remove login access for {{ s.name }}?');">
+            <button class="btn btn-sm btn-danger" type="submit">Remove</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr class="empty-row"><td colspan="5">No staff accounts yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

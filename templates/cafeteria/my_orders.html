@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}My Orders — HMS{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>My Cafeteria Orders</h2>
+    <p class="subtitle">Track your orders from placement to delivery.</p>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('cafeteria.menu') }}">+ New order</a>
+</div>
+
+{% for o in orders %}
+<div class="panel" style="margin-bottom: 14px;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+    <div>
+      <strong class="mono">Order #{{ o.id }}</strong>
+      <span class="text-muted" style="margin-left:8px;">{{ o.order_date.strftime('%d %b %Y, %H:%M') }} &middot; {{ o.delivery_location }}</span>
+    </div>
+    <div>
+      {% if o.payment_status != 'Paid' %}
+        <a class="btn btn-sm btn-primary" href="{{ url_for('payments.pay', purpose='cafeteria', reference_id=o.id) }}">Pay now</a>
+      {% else %}
+        <span class="badge {{ 'badge-completed' if o.status == 'Delivered' else ('badge-alert' if o.status == 'Cancelled' else 'badge-booked') }}">{{ o.status }}</span>
+      {% endif %}
+    </div>
+  </div>
+  <table>
+    <thead><tr><th>Item</th><th>Qty</th><th>Subtotal</th></tr></thead>
+    <tbody>
+      {% for line in o.items %}
+      <tr>
+        <td>{{ line.cafeteria_item.name if line.cafeteria_item else 'Item removed' }}</td>
+        <td class="mono">{{ line.quantity }}</td>
+        <td class="mono">Rs. {{ "%.2f"|format(line.subtotal) }}</td>
+      </tr>
+      {% endfor %}
+      <tr><td colspan="2" style="text-align:right; font-weight:600;">Total</td><td class="mono" style="font-weight:600;">Rs. {{ "%.2f"|format(o.total_amount) }}</td></tr>
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="panel"><div class="empty-state"><div class="big">You haven't placed any orders yet.</div>
+  <a class="btn btn-primary" href="{{ url_for('cafeteria.menu') }}">Browse the menu</a>
+</div></div>
+{% endfor %}
+{% endblock %}

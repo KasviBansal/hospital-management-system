@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}My Lab Reports — HMS{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>My Lab Reports</h2>
+    <p class="subtitle">Reports you've uploaded, and any sent directly by the hospital lab.</p>
+  </div>
+  <a class="btn btn-primary" href="{{ url_for('lab_reports.upload_report') }}">+ Upload a report</a>
+</div>
+
+{% if reports %}
+<div class="panel">
+  <table>
+    <thead><tr><th>Date</th><th>Test</th><th>Source</th><th>Notes</th><th></th></tr></thead>
+    <tbody>
+      {% for r in reports %}
+      <tr>
+        <td class="mono">{{ r.report_date.strftime('%d %b %Y') }}</td>
+        <td>{{ r.test_name }}</td>
+        <td><span class="badge {{ 'badge-completed' if r.source == 'Hospital Lab' else 'badge-booked' }}">{{ r.source }}</span></td>
+        <td class="text-muted">{{ r.notes or '—' }}</td>
+        <td class="table-actions">
+          <a class="btn btn-sm" href="{{ url_for('lab_reports.view_report', report_id=r.id) }}">View</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="panel"><div class="empty-state"><div class="big">No lab reports yet.</div>
+  <a class="btn btn-primary" href="{{ url_for('lab_reports.upload_report') }}">Upload your first report</a>
+</div></div>
+{% endif %}
+{% endblock %}

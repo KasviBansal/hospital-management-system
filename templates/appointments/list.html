@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Appointments — HMS{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>{{ 'My Appointments' if user.role != 'admin' else 'Appointments' }}</h2>
+    <p class="subtitle">Booking, rescheduling and history.</p>
+  </div>
+  {% if user.role in ['admin', 'patient'] %}
+  <a class="btn btn-primary" href="{{ url_for('appointments.new_appointment') }}">+ Book appointment</a>
+  {% endif %}
+</div>
+
+<div class="toolbar">
+  <div>
+    <a class="filter-chip {{ 'active' if not status }}" href="{{ url_for('appointments.list_appointments') }}">All</a>
+    <a class="filter-chip {{ 'active' if status == 'Booked' }}" href="{{ url_for('appointments.list_appointments', status='Booked') }}">Booked</a>
+    <a class="filter-chip {{ 'active' if status == 'Completed' }}" href="{{ url_for('appointments.list_appointments', status='Completed') }}">Completed</a>
+    <a class="filter-chip {{ 'active' if status == 'Cancelled' }}" href="{{ url_for('appointments.list_appointments', status='Cancelled') }}">Cancelled</a>
+  </div>
+</div>
+
+<div class="panel">
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th><th>Time</th>
+        {% if user.role != 'patient' %}<th>Patient</th>{% endif %}
+        {% if user.role != 'doctor' %}<th>Doctor</th>{% endif %}
+        <th>Reason</th><th>Payment</th><th>Status</th><th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in appointments %}
+      <tr>
+        <td class="mono">{{ a.appt_date.strftime('%d %b %Y') }}</td>
+        <td class="mono">{{ a.appt_time }}</td>
+        {% if user.role != 'patient' %}<td>{{ a.patient.name }}</td>{% endif %}
+        {% if user.role != 'doctor' %}<td>Dr. {{ a.doctor.name }}</td>{% endif %}
+        <td class="text-muted">{{ a.reason or '—' }}</td>
+        <td>
+          {% if a.payment_status == 'Paid' %}<span class="badge badge-completed">Paid</span>
+          {% else %}<a class="badge badge-alert" href="{{ url_for('payments.pay', purpose='appointment', reference_id=a.id) }}">Pay Rs. {{ "%.0f"|format(a.fee) }}</a>{% endif %}
+        </td>
+        <td><span class="badge badge-{{ a.status|lower }}">{{ a.status }}</span></td>
+        <td class="table-actions">
+          {% if a.status == 'Booked' %}
+            {% if user.role in ['admin', 'patient'] %}
+              <a class="btn btn-sm" href="{{ url_for('appointments.edit_appointment', appt_id=a.id) }}">Reschedule</a>
+              <form method="post" action="{{ url_for('appointments.cancel_appointment', appt_id=a.id) }}"
+                    onsubmit="return confirm('Cancel this appointment?');">
+                <button class="btn btn-sm btn-danger" type="submit">Cancel</button>
+              </form>
+            {% endif %}
+            {% if user.role in ['admin', 'doctor'] %}
+              <form method="post" action="{{ url_for('appointments.complete_appointment', appt_id=a.id) }}">
+                <button class="btn btn-sm btn-primary" type="submit">Complete</button>
+              </form>
+            {% endif %}
+          {% else %}
+            <span class="text-muted">—</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr class="empty-row"><td colspan="8">No appointments found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

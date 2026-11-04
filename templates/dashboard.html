@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — HMS{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h2>Overview</h2>
+    <p class="subtitle">A single view across registration, records and pharmacy.</p>
+  </div>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card">
+    <span class="value">{{ stats.patients }}</span>
+    <span class="label">Registered patients</span>
+  </div>
+  <div class="stat-card">
+    <span class="value">{{ stats.doctors }}</span>
+    <span class="label">Doctors on staff</span>
+  </div>
+  <div class="stat-card">
+    <span class="value">{{ stats.appointments_today }}</span>
+    <span class="label">Appointments today</span>
+  </div>
+  <div class="stat-card">
+    <span class="value">{{ stats.appointments_total }}</span>
+    <span class="label">Upcoming appointments</span>
+  </div>
+  <div class="stat-card">
+    <span class="value">{{ stats.records }}</span>
+    <span class="label">Medical records on file</span>
+  </div>
+  <div class="stat-card">
+    <span class="value">{{ stats.medicines }}</span>
+    <span class="label">Medicines in inventory</span>
+  </div>
+</div>
+
+<div class="two-col">
+  <div class="panel">
+    <h3>Upcoming appointments</h3>
+    {% if upcoming %}
+    <table>
+      <thead>
+        <tr><th>Date</th><th>Time</th><th>Patient</th><th>Doctor</th></tr>
+      </thead>
+      <tbody>
+        {% for a in upcoming %}
+        <tr>
+          <td class="mono">{{ a.appt_date.strftime('%d %b %Y') }}</td>
+          <td class="mono">{{ a.appt_time }}</td>
+          <td>{{ a.patient.name }}</td>
+          <td>Dr. {{ a.doctor.name }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state"><div class="big">No upcoming appointments booked.</div>
+      <a class="btn btn-primary" href="{{ url_for('appointments.new_appointment') }}">Book an appointment</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="panel">
+    <h3>Pharmacy alerts</h3>
+    {% if low_stock or near_expiry %}
+      {% for m in low_stock %}
+        <p style="margin: 0 0 10px;">
+          <span class="badge badge-alert">Low stock</span>
+          <strong>{{ m.name }}</strong> — <span class="mono">{{ m.stock_qty }}</span> units left
+        </p>
+      {% endfor %}
+      {% for m in near_expiry %}
+        <p style="margin: 0 0 10px;">
+          <span class="badge badge-warn">{{ 'Expired' if m.is_expired else 'Expiring soon' }}</span>
+          <strong>{{ m.name }}</strong> — <span class="mono">{{ m.expiry_date.strftime('%d %b %Y') }}</span>
+        </p>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state"><div class="big">No stock or expiry alerts right now.</div></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

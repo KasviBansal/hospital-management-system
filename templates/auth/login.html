@@ -1,0 +1,29 @@
+{% extends "public_base.html" %}
+{% block title %}{{ role|capitalize }} Login — HMS{% endblock %}
+{% block content %}
+<div class="auth-card">
+  <h2>{{ role|capitalize }} login</h2>
+  <p class="subtitle">Sign in to the {{ role }} portal.</p>
+
+  <form method="post">
+    <div class="field">
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" value="{{ email }}" required autofocus>
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" required>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit" style="width:100%; justify-content:center;">Log in</button>
+    </div>
+  </form>
+
+  {% if role == 'patient' %}
+  <p class="auth-footer-note">Don't have an account? <a href="{{ url_for('auth.signup_patient') }}">Sign up</a></p>
+  {% else %}
+  <p class="auth-footer-note">{{ role|capitalize }} accounts are created by the hospital admin.</p>
+  {% endif %}
+  <p class="auth-footer-note"><a href="{{ url_for('auth.portal') }}">&larr; Back to portal selection</a></p>
+</div>
+{% endblock %}

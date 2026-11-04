@@ -1,0 +1,59 @@
+{% extends "public_base.html" %}
+{% block title %}Patient Sign Up — HMS{% endblock %}
+{% block content %}
+<div class="auth-card wide">
+  <h2>Create your patient account</h2>
+  <p class="subtitle">Register once to book appointments, view records, and more.</p>
+
+  <form method="post">
+    <div class="field">
+      <label for="name">Full name</label>
+      <input type="text" id="name" name="name" value="{{ form.get('name', '') }}" required>
+    </div>
+    <div class="field">
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" value="{{ form.get('email', '') }}" required>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
+        <p class="hint">At least 6 characters.</p>
+      </div>
+      <div class="field">
+        <label for="confirm_password">Confirm password</label>
+        <input type="password" id="confirm_password" name="confirm_password" required>
+      </div>
+    </div>
+    <hr class="section-divider">
+    <div class="field-row">
+      <div class="field">
+        <label for="age">Age</label>
+        <input type="number" id="age" name="age" min="0" max="130" value="{{ form.get('age', '') }}" required>
+      </div>
+      <div class="field">
+        <label for="gender">Gender</label>
+        <select id="gender" name="gender" required>
+          <option value="">Select...</option>
+          {% for g in ['Male', 'Female', 'Other'] %}
+          <option value="{{ g }}" {{ 'selected' if form.get('gender') == g }}>{{ g }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="phone">Phone number</label>
+      <input type="text" id="phone" name="phone" value="{{ form.get('phone', '') }}">
+    </div>
+    <div class="field">
+      <label for="address">Address</label>
+      <textarea id="address" name="address" rows="2">{{ form.get('address', '') }}</textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" type="submit" style="width:100%; justify-content:center;">Create account</button>
+    </div>
+  </form>
+
+  <p class="auth-footer-note">Already have an account? <a href="{{ url_for('auth.login', role='patient') }}">Log in</a></p>
+</div>
+{% endblock %}
